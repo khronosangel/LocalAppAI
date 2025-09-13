@@ -1,0 +1,212 @@
+﻿@page "/"
+<style>
+    .messages-pane {
+        background-color: #E9F1FB;
+        min-height: 200px;
+        padding: 20px;
+        max-height: 75vh;
+        overflow: auto;
+        height: 65vh;
+    }
+
+    .message-single {
+        width: 70%;
+        margin-bottom: 20px
+    }
+
+        .message-single .card:before {
+            content: ' ';
+            position: absolute;
+            width: 0;
+            height: 0;
+            top: auto;
+            bottom: -19px;
+            border: 10px solid;
+            /* border-color: #666 transparent transparent #666; */
+        }
+
+    .messages-box {
+        background-color: #73ABE0;
+        border-radius: 10px;
+        padding: 10px;
+        margin: 5px;
+    }
+
+        .messages-box .thread {
+            background-color: #FFFFFF;
+            border-radius: 10px;
+            box-shadow: 1px 1px 5px #333;
+            margin: 10px;
+            padding: 10px;
+            width: 70%;
+        }
+
+    .thread-user {
+        border-bottom: 1px solid #CCC;
+    }
+
+        .thread-user h4 {
+            display: inline;
+        }
+
+    .message-from {
+        margin-right: auto !important;
+        clear: both;
+    }
+
+    .message-to {
+        margin-left: auto !important;
+        clear: both;
+    }
+
+        .message-to .card:before {
+            border-color: #4e73df #4e73df transparent transparent;
+            right: 20px;
+            left: auto;
+        }
+
+
+
+    .message-from .card:before {
+        border-color: #1cc88a transparent transparent #1cc88a;
+        left: 20px;
+        right: auto;
+    }
+
+    .message-from img.rounded-circle {
+        width: 80px;
+        float: left;
+        margin: 0px 5px;
+    }
+
+    .message-to img.rounded-circle {
+        width: 80px;
+        float: right;
+        margin: 0px 5px;
+    }
+
+</style>
+<!--new messages here-->
+@* <div>
+    <h4>
+        <button class="btn text-primary"><i class="fa fa-arrow-left"></i></button>
+        Messages
+    </h4>
+</div>
+<div id="onlinesUsers" class="user-pane">
+    <div class="card shadow mb-4">
+        <!-- Card Header - Dropdown -->
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Dropdown Card Example</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                     aria-labelledby="dropdownMenuLink">
+                    <div class="dropdown-header">Dropdown Header:</div>
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                </div>
+            </div>
+        </div>
+        <!-- Card Body -->
+        <div class="card-body">
+            Dropdown menus can be placed in the card header in order to extend the functionality
+            of a basic card. In this dropdown card example, the Font Awesome vertical ellipsis
+            icon in the card header can be clicked on in order to toggle a dropdown menu.
+        </div>
+    </div>
+</div> 
+    @* <div class="message-single message-to">
+        <img class="rounded-circle" src="/img/undraw_profile_1.svg" alt="..." />
+        <div class="card bg-primary text-white shadow">
+            <div class="card-body">
+                Primary
+                <div class="text-white-50 small">#4e73df</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="message-single message-from">
+        <img class="rounded-circle" src="/img/undraw_profile_2.svg" alt="..." />
+        <div class="card bg-success text-white shadow">
+            <div class="card-body">
+                Success
+                <div class="text-white-50 small">#1cc88a</div>
+            </div>
+        </div>
+    </div> 
+
+</div>*@<div id="statusBar" style="min-height: 40px; background-color: #EEE; padding: 5px;">
+    @StatusMessage
+</div>
+<div id="result" class="messages-pane">
+    @foreach (var msg in MessagesList)
+    {
+        if (msg.IsFromUser)
+        {
+            <div class="message-single message-to">
+                <img class="rounded-circle" src="/img/undraw_profile_1.svg" alt="..." />
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body">
+                        @msg.Content
+                        <div class="text-white-50 small">@msg.Timestamp</div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="message-single message-from">
+                <img class="rounded-circle" src="/img/undraw_profile_2.svg" alt="..." />
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body">
+                        @msg.Content
+                        <div class="text-white-50 small">@msg.Timestamp</div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    <div id="anchorHere"></div>
+</div>
+<form id="frmSendMessage" @onsubmit="SendMessage">
+    <div class="messages-editor">
+        <div id="messageInput" class="input-group">
+            <input type="hidden" name="SenderUserID" value="3" />
+            <input type="hidden" name="ReceiverUserID" value="4" />
+            @* <input type="text" id="txtSearch" class="form-control" name="SenderMessage" autocomplete="off" @bind="MessageInput" style="height: 70px;" /> *@
+            <textarea id="txtSearch" class="form-control" name="SenderMessage" autocomplete="off" @bind="MessageInput" style="height: 70px;">
+            </textarea>
+            <button type="submit" class="input-group-text text-primary" style="width: 70px;font-size: 20px;">
+                <i style=" margin: 0px auto; " class="fas fa-paper-plane"></i>
+            </button>
+            <button type="button" class="input-group-text text-primary" style="width: 70px;font-size: 20px;">
+                <i style=" margin: 0px auto; " class="fas fa-arrow-down"></i>
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+    $(function(){
+        // $('#txtSearch').on('keydown', function(e) {
+        //     if (e.key === 'Enter' && !e.shiftKey) {
+        //         e.preventDefault();
+        //         $('#frmSendMessage').trigger('submit');
+        //     }
+        // });
+    });
+
+    window.scrollToBottom = function () {
+        var $result = $('#result');
+        $result.stop(true); // Stop any ongoing animation
+        $result.animate({
+            scrollTop: $result[0].scrollHeight
+        }, 500); // 500ms for smooth scroll
+    }
+</script>
