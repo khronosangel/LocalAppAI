@@ -15,11 +15,11 @@ namespace LocalAppAI.Services
         private OllamaApiClient chatClient;
         private List<Microsoft.Extensions.AI.ChatMessage> chatHistory;
         private Chat chat;
-        private const string SelectedModel = "phi4-mini:latest";
-        //private const string SelectedModel = "incept5/llama3.1-claude:latest";//"phi4-mini:latest";
-
-        //private const string llmServerURL = "http://localhost:11434/";
-        private const string llmServerURL = "http://192.168.50.191:11434/";
+        //private const string SelectedModel = "phi4-mini:latest";
+        private const string SelectedModel = "incept5/llama3.1-claude:latest";//"phi4-mini:latest";
+        private int tokenCount = 0;
+        private const string llmServerURL = "http://localhost:11434/";
+        //private const string llmServerURL = "http://192.168.50.191:11434/";
 
         public AIChatService()
         {
@@ -59,27 +59,26 @@ namespace LocalAppAI.Services
         public async Task SendMessage(
             string Message,
             DateTime SentDate,
-            Func<string, Task> InProgress,
-            Func<string, Task> OnFinish
+            Func<string, int, Task> InProgress,
+            Func<string, int, Task> OnFinish
         )
         {
             var userPrompt = Message;
             chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(Microsoft.Extensions.AI.ChatRole.User, userPrompt));
             //Collecting replies
             string response = "";
-
-
-
-            await foreach (var answerToken in chat.SendAsync(userPrompt)) 
+            tokenCount = 0;
+            await foreach (var answerToken in chat.SendAsync(userPrompt))
             //await foreach (var stream in chatClient.GenerateAsync(userPrompt))
             {
+                tokenCount++;
                 response += answerToken;
                 //response += stream;
-                await InProgress(response);
+                await InProgress(response, tokenCount);
             }
             chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(Microsoft.Extensions.AI.ChatRole.Assistant, response));
 
-            await OnFinish(response);
+            await OnFinish(response, tokenCount);
 
         }
     }

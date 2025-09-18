@@ -10,7 +10,7 @@
           rel="stylesheet">
 
     <!-- Custom styles for this template-->
-    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="css/sb-admin-2.min.css?123" rel="stylesheet">
     <!--<link href="css/sb-admin.css" rel="stylesheet">-->
 
     <link href="css/loading_icon.css" rel="stylesheet" />
@@ -46,8 +46,29 @@
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+    <!--https://github.com/showdownjs/showdown-->
+    <script src="/js/showdown.min.js"></script>
+    <script>
+
+        $(function () {
+
+        });
+
+        window.transformText = function () {
+            let converter = new showdown.Converter();
+            let srcMsg = $('.generated-messsage:last-child .base-message').text();
+            let converted = converter.makeHtml(srcMsg);
+            $('.generated-messsage:last-child .base-message').html(converted);
+        }
+
+        window.scrollToBottom = function () {
+            var $result = $('#result');
+            $result.stop(true); // Stop any ongoing animation
+            $result.animate({
+                scrollTop: $result[0].scrollHeight
+            }, 500); // 500ms for smooth scroll
+        }
+    </script>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
-
 </body>
-
 </html>

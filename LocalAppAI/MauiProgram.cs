@@ -22,6 +22,7 @@ namespace LocalAppAI
     		builder.Logging.AddDebug();
 #endif
             builder.Services.AddSingleton<AIChatService>();
+            builder.Services.AddSingleton<AttachmentService>();
             return builder.Build();
         }
     }

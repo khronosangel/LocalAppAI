@@ -24,6 +24,13 @@ namespace LocalAppAI.Components.Pages
         public int MessageIndex = 0;
         protected override async Task OnInitializedAsync()
         {
+            string AppDataPath = FileSystem.AppDataDirectory;
+
+            if (!Directory.Exists($"{AppDataPath}/FileContext"))
+            {
+                Directory.CreateDirectory($"{AppDataPath}/FileContext");
+            }
+
             MessageIndex = 0;
             await Task.Delay(1000);
             await AIChat.PrepareAIModel(async (stat) =>
@@ -67,16 +74,18 @@ namespace LocalAppAI.Components.Pages
             await InvokeAsync(StateHasChanged);
             await ScrollToBottomAsync();
             
-            await AIChat.SendMessage(incomingMessage, transactionDate, async (res) =>
+            await AIChat.SendMessage(incomingMessage, transactionDate, async (res, tokens) =>
             {
                 var aiMsg = MessagesList.FindLast(m => m.ID == MessageIndex);
                 if (aiMsg != null)
                 {
                     aiMsg.Content = res;
+                    aiMsg.Timestamp = transactionDate;
+                    aiMsg.TokensGenerated = tokens;
                 }
                 await ScrollToBottomAsync();
                 await InvokeAsync(StateHasChanged);
-            }, async (res) =>
+            }, async (res,tokens) =>
             {
                 var processedDate = DateTime.Now;
                 // Replace the last "(Thinking...)" message with the actual response
@@ -85,9 +94,11 @@ namespace LocalAppAI.Components.Pages
                 {
                     aiMsg.Content = res;
                     aiMsg.Timestamp = processedDate;
+                    aiMsg.TokensGenerated = tokens;
                 }
                 await ScrollToBottomAsync();
                 await InvokeAsync(StateHasChanged);
+                await JS.InvokeVoidAsync("window.transformText");
             });
         }
 
@@ -103,5 +114,6 @@ namespace LocalAppAI.Components.Pages
                 await SendMessage();
             }
         }
+
     }
 }

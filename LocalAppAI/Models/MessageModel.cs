@@ -10,6 +10,7 @@ namespace LocalAppAI.Models
     {
         public int ID { get; set; }
         public string Content { get; set; }
+        public int TokensGenerated { get; set; }
         public DateTime Timestamp { get; set; }
         public bool IsFromUser { get; set; }
     }
