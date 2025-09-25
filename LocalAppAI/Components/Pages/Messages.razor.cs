@@ -20,8 +20,15 @@ namespace LocalAppAI.Components.Pages
 
         public string MessageInput { get; set; }
         public List<MessageModel> MessagesList { get; set; } = new();
+        public Dictionary<int,string> Responses { get; set; } = new();
         public string StatusMessage { get; set; }
         public int MessageIndex = 0;
+
+        
+        public CancellationTokenSource SpeechThread;
+
+        public bool IsSpeaking = false;
+
         protected override async Task OnInitializedAsync()
         {
             string AppDataPath = FileSystem.AppDataDirectory;
@@ -43,6 +50,8 @@ namespace LocalAppAI.Components.Pages
                 StatusMessage = done;
                 await InvokeAsync(StateHasChanged);
             });
+
+            Responses = new Dictionary<int, string>();
         }
 
         public async Task SendMessage()
@@ -89,7 +98,7 @@ namespace LocalAppAI.Components.Pages
             {
                 var processedDate = DateTime.Now;
                 // Replace the last "(Thinking...)" message with the actual response
-                var aiMsg = MessagesList.FindLast(m => !m.IsFromUser && m.Content == "(Thinking...)");
+                var aiMsg = MessagesList.FindLast(m => !m.IsFromUser);// && m.Content == "(Thinking...)");
                 if (aiMsg != null)
                 {
                     aiMsg.Content = res;
@@ -98,7 +107,8 @@ namespace LocalAppAI.Components.Pages
                 }
                 await ScrollToBottomAsync();
                 await InvokeAsync(StateHasChanged);
-                await JS.InvokeVoidAsync("window.transformText");
+                await JS.InvokeVoidAsync("window.transformText", aiMsg.ID);
+                Responses.Add(aiMsg.ID, res);
             });
         }
 
@@ -107,12 +117,46 @@ namespace LocalAppAI.Components.Pages
             await JS.InvokeVoidAsync("window.scrollToBottom");
         }
 
-        public async Task HandleKeyDown(KeyboardEventArgs e)
+        private async Task CancelPrompt()
         {
-            if (e.Key == "Enter" && !e.ShiftKey)
+            await AIChat.CancelPrompt();
+        }
+
+        private async Task SpeakOut(int MessageID)
+        {
+            if (!IsSpeaking)
             {
-                await SendMessage();
+                var AIResponse = Responses[MessageID];
+                //var speechVoiceOptions = new SpeechOptions
+                //{
+                //    Volume = 1.0f,
+                //    Pitch = 1.0f,
+                //    //Locale = "en/US"
+                //};
+                IEnumerable<Locale> locales = await TextToSpeech.Default.GetLocalesAsync();
+                // You may need to filter locales to find one with a female voice,
+                // or the operating system's default might have a female voice.
+                Locale femaleLocale = locales.FirstOrDefault(l => l.Language == "en-US"); // Example for English (US)
+
+                SpeechOptions speechVoiceOptions = new SpeechOptions()
+                {
+                    Locale = femaleLocale, // Select a locale that uses a female voice
+                    Volume = 0.75f,       // 0.0 - 1.0
+                    Pitch = 1.0f          // 0.0 - 2.0
+                };
+                SpeechThread = new CancellationTokenSource();
+                IsSpeaking = true;
+                await TextToSpeech.Default.SpeakAsync(AIResponse, speechVoiceOptions, SpeechThread.Token);
             }
+            else
+            {
+                if (!(SpeechThread?.IsCancellationRequested ?? true))
+                {
+                    SpeechThread.Cancel();
+                    IsSpeaking = false ;
+                }
+            }
+            
         }
 
     }

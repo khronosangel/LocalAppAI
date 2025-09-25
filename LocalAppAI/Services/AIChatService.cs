@@ -20,6 +20,8 @@ namespace LocalAppAI.Services
         private int tokenCount = 0;
         private const string llmServerURL = "http://localhost:11434/";
         //private const string llmServerURL = "http://192.168.50.191:11434/";
+        private CancellationTokenSource PromptThread;
+
 
         public AIChatService()
         {
@@ -64,12 +66,12 @@ namespace LocalAppAI.Services
         )
         {
             var userPrompt = Message;
+            PromptThread = new CancellationTokenSource();
             chatHistory.Add(new Microsoft.Extensions.AI.ChatMessage(Microsoft.Extensions.AI.ChatRole.User, userPrompt));
             //Collecting replies
             string response = "";
             tokenCount = 0;
-            await foreach (var answerToken in chat.SendAsync(userPrompt))
-            //await foreach (var stream in chatClient.GenerateAsync(userPrompt))
+            await foreach (var answerToken in chat.SendAsync(userPrompt, PromptThread.Token))
             {
                 tokenCount++;
                 response += answerToken;
@@ -80,6 +82,14 @@ namespace LocalAppAI.Services
 
             await OnFinish(response, tokenCount);
 
+        }
+
+        public async Task CancelPrompt()
+        {
+            if (!(PromptThread?.IsCancellationRequested ?? true))
+            {
+                PromptThread.Cancel();
+            }
         }
     }
 }
