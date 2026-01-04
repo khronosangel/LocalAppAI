@@ -1,6 +1,188 @@
 ﻿@page "/tictac"
-<h3>Tictactoe</h3>
 
-@code {
+<div class="tictactoe-container">
+    <h2 class="game-title">Tic-Tac-Toe Game</h2>
+    
+    <div class="game-info">
+        <p class="current-player">Current Player: 
+            @if (isCircleTurn)
+            {
+                <i class="fas fa-circle player-circle"></i>
+            }
+            else
+            {
+                <i class="fas fa-times player-x"></i>
+            }
+        </p>
+    </div>
 
-}
+    @if (!string.IsNullOrEmpty(gameMessage))
+    {
+        <div class="game-message @(gameMessage.Contains("wins") ? "winner-message" : "")">
+            @gameMessage
+        </div>
+    }
+
+    <div class="game-board">
+        @for (int i = 0; i < 9; i++)
+        {
+            int index = i;
+            <div class="cell @(IsWinningCell(index) ? "winning-cell" : "")" @onclick="() => HandleCellClick(index)">
+                @if (board[index] == "O")
+                {
+                    <i class="fas fa-circle player-circle"></i>
+                }
+                else if (board[index] == "X")
+                {
+                    <i class="fas fa-times player-x"></i>
+                }
+            </div>
+        }
+    </div>
+
+    <button class="btn btn-primary reset-btn" @onclick="ResetGame">
+        <i class="fas fa-redo"></i> Reset Game
+    </button>
+</div>
+
+<style>
+    .tictactoe-container {
+        max-width: 600px;
+        margin: 50px auto;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .game-title {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 2rem;
+    }
+
+    .game-info {
+        margin-bottom: 20px;
+    }
+
+    .current-player {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: #444;
+    }
+
+    .game-message {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        background-color: #f0f0f0;
+        color: #333;
+    }
+
+    .winner-message {
+        background-color: #ffd700;
+        color: #333;
+        animation: pulse 0.5s ease-in-out;
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .game-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 10px;
+        max-width: 450px;
+        margin: 0 auto 30px;
+        background-color: #333;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .cell {
+        background-color: white;
+        aspect-ratio: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 4rem;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .cell:hover {
+        background-color: #f0f0f0;
+        transform: scale(1.05);
+    }
+
+    .cell i {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .winning-cell {
+        background-color: #ffffcc !important;
+        animation: winningPulse 0.6s ease-in-out infinite;
+    }
+
+    @@keyframes winningPulse {
+        0%, 100% { 
+            background-color: #ffffcc;
+        }
+        50% { 
+            background-color: #ffff99;
+        }
+    }
+
+    .player-circle {
+        color: #28a745;
+    }
+
+    .player-x {
+        color: #dc3545;
+    }
+
+    .reset-btn {
+        font-size: 1.1rem;
+        padding: 12px 30px;
+        border-radius: 8px;
+    }
+
+    .reset-btn i {
+        margin-right: 8px;
+    }
+
+    @@media (max-width: 600px) {
+        .game-board {
+            max-width: 350px;
+        }
+
+        .cell {
+            font-size: 3rem;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+        }
+
+        .current-player {
+            font-size: 1.1rem;
+        }
+    }
+</style>
