@@ -58,7 +58,7 @@
             //let srcMsg = $('.generated-messsage:last-child .base-message').text();
             let srcMsg = $('.message-from[data-message-id="message' + msgID + '"] .base-message').text();
             let converted = converter.makeHtml(srcMsg);
-            $('.generated-messsage:last-child .base-message').html(converted);
+            $('.message-from[data-message-id="message' + msgID + '"] .generated-messsage .base-message').html(converted);
         }
 
         window.scrollToBottom = function () {

@@ -82,7 +82,9 @@ namespace LocalAppAI.Components.Pages
             MessageInput = "";
             await InvokeAsync(StateHasChanged);
             await ScrollToBottomAsync();
-            
+            // Enable MCP with a server executable
+            await AIChat.EnableMcpSupport("C:\\Projects\\LocalAppAI\\SampleMCPServer\\bin\\Debug\\net10.0\\SampleMCPServer.exe");
+
             await AIChat.SendMessage(incomingMessage, transactionDate, async (res, tokens) =>
             {
                 var aiMsg = MessagesList.FindLast(m => m.ID == MessageIndex);
@@ -109,6 +111,9 @@ namespace LocalAppAI.Components.Pages
                 await InvokeAsync(StateHasChanged);
                 await JS.InvokeVoidAsync("window.transformText", aiMsg.ID);
                 Responses.Add(aiMsg.ID, res);
+
+                // Disable MCP when done
+                await AIChat.DisableMcpSupport();
             });
         }
 

@@ -5,6 +5,10 @@ VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalAppAI", "LocalAppAI\LocalAppAI.csproj", "{75F450AC-4934-4C3A-998D-BF8414DB8805}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleMCPServer", "SampleMCPServer\SampleMCPServer.csproj", "{68AF086E-D678-2E8B-97A9-0FBEAD30CFA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleMCPClient", "SampleMCPClient\SampleMCPClient.csproj", "{E627549D-FA8B-3C4E-CA55-E9648D9286FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +21,14 @@ Global
 		{75F450AC-4934-4C3A-998D-BF8414DB8805}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75F450AC-4934-4C3A-998D-BF8414DB8805}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75F450AC-4934-4C3A-998D-BF8414DB8805}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{68AF086E-D678-2E8B-97A9-0FBEAD30CFA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68AF086E-D678-2E8B-97A9-0FBEAD30CFA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68AF086E-D678-2E8B-97A9-0FBEAD30CFA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68AF086E-D678-2E8B-97A9-0FBEAD30CFA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E627549D-FA8B-3C4E-CA55-E9648D9286FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E627549D-FA8B-3C4E-CA55-E9648D9286FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E627549D-FA8B-3C4E-CA55-E9648D9286FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E627549D-FA8B-3C4E-CA55-E9648D9286FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

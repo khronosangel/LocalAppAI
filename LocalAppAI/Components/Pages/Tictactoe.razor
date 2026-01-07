@@ -1,54 +1,122 @@
 ﻿@page "/tictac"
 
-<div class="tictactoe-container">
-    <h2 class="game-title">Tic-Tac-Toe Game</h2>
-    
-    <div class="game-info">
-        <p class="current-player">Current Player: 
-            @if (isCircleTurn)
+<div class="tictactoe-main-container">
+    <div class="game-section">
+        <div class="tictactoe-container">
+            <h2 class="game-title">Tic-Tac-Toe vs AI</h2>
+            
+            @if (!string.IsNullOrEmpty(aiStatus))
             {
-                <i class="fas fa-circle player-circle"></i>
+                <div class="ai-status">
+                    <i class="fas fa-robot"></i> @aiStatus
+                </div>
             }
-            else
+
+            <div class="game-info">
+                <p class="current-player">Current Player: 
+                    @if (isCircleTurn)
+                    {
+                        <span>You <i class="fas fa-circle player-circle"></i></span>
+                    }
+                    else
+                    {
+                        <span>AI <i class="fas fa-times player-x"></i></span>
+                    }
+                </p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(gameMessage))
             {
-                <i class="fas fa-times player-x"></i>
+                <div class="game-message @(gameMessage.Contains("wins") || gameMessage.Contains("win") ? "winner-message" : "")">
+                    @gameMessage
+                </div>
             }
-        </p>
-    </div>
 
-    @if (!string.IsNullOrEmpty(gameMessage))
-    {
-        <div class="game-message @(gameMessage.Contains("wins") ? "winner-message" : "")">
-            @gameMessage
-        </div>
-    }
-
-    <div class="game-board">
-        @for (int i = 0; i < 9; i++)
-        {
-            int index = i;
-            <div class="cell @(IsWinningCell(index) ? "winning-cell" : "")" @onclick="() => HandleCellClick(index)">
-                @if (board[index] == "O")
+            <div class="game-board">
+                @for (int i = 0; i < 9; i++)
                 {
-                    <i class="fas fa-circle player-circle"></i>
-                }
-                else if (board[index] == "X")
-                {
-                    <i class="fas fa-times player-x"></i>
+                    int index = i;
+                    <div class="cell @(IsWinningCell(index) ? "winning-cell" : "") @(isAIThinking ? "disabled" : "")" 
+                         @onclick="() => HandleCellClick(index)">
+                        @if (board[index] == "O")
+                        {
+                            <i class="fas fa-circle player-circle"></i>
+                        }
+                        else if (board[index] == "X")
+                        {
+                            <i class="fas fa-times player-x"></i>
+                        }
+                        else if (isAIThinking)
+                        {
+                            <div class="cell-thinking"></div>
+                        }
+                    </div>
                 }
             </div>
-        }
+
+            <button class="btn btn-primary reset-btn" @onclick="ResetGame">
+                <i class="fas fa-redo"></i> Reset Game
+            </button>
+        </div>
     </div>
 
-    <button class="btn btn-primary reset-btn" @onclick="ResetGame">
-        <i class="fas fa-redo"></i> Reset Game
-    </button>
+    <div class="chat-log-section">
+        <div class="chat-log-container">
+            <h3 class="chat-log-title">
+                <i class="fas fa-comments"></i> AI Chat Log
+            </h3>
+            <div class="chat-log-messages">
+                @foreach (var entry in chatLog)
+                {
+                    <div class="chat-entry @entry.Role.ToLower()">
+                        <div class="chat-header">
+                            <span class="chat-role">
+                                @if (entry.Role == "System")
+                                {
+                                    <i class="fas fa-cog"></i>
+                                }
+                                else if (entry.Role == "AI")
+                                {
+                                    <i class="fas fa-robot"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user"></i>
+                                }
+                                @entry.Role
+                            </span>
+                            <span class="chat-time">@entry.Timestamp.ToString("HH:mm:ss")</span>
+                        </div>
+                        <div class="chat-message">@entry.Message</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
+    .tictactoe-main-container {
+        display: flex;
+        max-width: 1200px;
+        margin: 20px auto;
+        gap: 20px;
+        padding: 20px;
+        flex-wrap: wrap;
+    }
+
+    .game-section {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .chat-log-section {
+        flex: 1;
+        min-width: 300px;
+        max-width: 500px;
+    }
+
     .tictactoe-container {
-        max-width: 600px;
-        margin: 50px auto;
         text-align: center;
         padding: 20px;
     }
@@ -59,6 +127,20 @@
         font-size: 2rem;
     }
 
+    .ai-status {
+        background-color: #e3f2fd;
+        padding: 10px 20px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        color: #1976d2;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .ai-status i {
+        margin-right: 8px;
+    }
+
     .game-info {
         margin-bottom: 20px;
     }
@@ -67,6 +149,12 @@
         font-size: 1.3rem;
         font-weight: bold;
         color: #444;
+    }
+
+    .current-player span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .game-message {
@@ -116,9 +204,28 @@
         position: relative;
     }
 
-    .cell:hover {
+    .cell:hover:not(.disabled) {
         background-color: #f0f0f0;
         transform: scale(1.05);
+    }
+
+    .cell.disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .cell-thinking {
+        width: 30px;
+        height: 30px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #1976d2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
     .cell i {
@@ -168,7 +275,130 @@
         margin-right: 8px;
     }
 
-    @@media (max-width: 600px) {
+    /* Chat Log Styles */
+    .chat-log-container {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-log-title {
+        color: #333;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .chat-log-title i {
+        color: #1976d2;
+        margin-right: 8px;
+    }
+
+    .chat-log-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+
+    .chat-log-messages::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .chat-log-messages::-webkit-scrollbar-track {
+        background: #e9ecef;
+        border-radius: 10px;
+    }
+
+    .chat-log-messages::-webkit-scrollbar-thumb {
+        background: #adb5bd;
+        border-radius: 10px;
+    }
+
+    .chat-log-messages::-webkit-scrollbar-thumb:hover {
+        background: #6c757d;
+    }
+
+    .chat-entry {
+        margin-bottom: 15px;
+        padding: 12px;
+        border-radius: 8px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .chat-entry.system {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+    }
+
+    .chat-entry.user {
+        background-color: #d1ecf1;
+        border-left: 4px solid #17a2b8;
+    }
+
+    .chat-entry.ai {
+        background-color: #d4edda;
+        border-left: 4px solid #28a745;
+    }
+
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .chat-role {
+        font-weight: bold;
+        color: #495057;
+    }
+
+    .chat-role i {
+        margin-right: 5px;
+    }
+
+    .chat-time {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .chat-message {
+        color: #212529;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    @@media (max-width: 900px) {
+        .tictactoe-main-container {
+            flex-direction: column;
+        }
+
+        .chat-log-section {
+            max-width: 100%;
+        }
+
+        .chat-log-container {
+            height: 400px;
+        }
+
         .game-board {
             max-width: 350px;
         }
@@ -183,6 +413,11 @@
 
         .current-player {
             font-size: 1.1rem;
+        }
+
+        .ai-status {
+            font-size: 1rem;
+            padding: 8px 15px;
         }
     }
 </style>
